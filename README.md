@@ -55,7 +55,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 ```
 [![rotate](02/rotate.gif)](02/rotate.glsl)
 
-# 03 Squares and Rotation
+## 03 Squares and Rotation
 Drawing a square is very similar to drawing a circle except we will use the following equation: 
 ```glsl
 vec3 sdfSquare(vec2 uv, float size, vec2 offset) {
