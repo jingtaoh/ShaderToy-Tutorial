@@ -1,7 +1,12 @@
+vec2 rotate(vec2 uv, float th) {
+  return mat2(cos(th), sin(th), -sin(th), cos(th)) * uv;
+}
+
 vec3 sdfSquare(vec2 uv, float size, vec2 offset) {
   float x = uv.x - offset.x;
   float y = uv.y - offset.y;
-  float d = max(abs(x), abs(y)) - size;
+  vec2 rotated = rotate(vec2(x, y), iTime);
+  float d = max(abs(rotated.x), abs(rotated.y)) - size;
 
   return d > 0. ? vec3(1.) : vec3(1., 0., 0.);
 }
