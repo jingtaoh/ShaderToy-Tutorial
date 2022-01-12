@@ -75,3 +75,56 @@ vec2 rotate(vec2 uv, float th) {
 }
 ```
 [![rotate](03/rotate.gif)](3/rotate.glsl)
+
+## 04 Mutiple 2D Shapes and Mixing
+The `mix` function linearly interpolates between two values. Same as `lerp` in HLSL.
+```glsl
+  float interpolatedValue = mix(0., 1., uv.x);
+```
+[![mix](04/mix.png)](04/mix.glsl)
+When using the `mix` function on vectors, it will use the third parameter to interpolate each vector on a component basis.
+```glsl
+    return mix(gradientStartColor, gradientEndColor,
+             uv.y); // gradient goes from bottom to top
+```
+[![gradient](04/gradient.png)](04/gradient.glsl)
+we are now abstracting out a few things. We have a `drawScene` function that will be responsible for rendering the scene, and the `sdfCircle` now returns a float that represents the "signed distance" between a pixel on the screen and a point on the circle.
+```glsl
+float sdfCircle(vec2 uv, float r, vec2 offset) {
+  float x = uv.x - offset.x;
+  float y = uv.y - offset.y;
+
+  return length(vec2(x, y)) - r;
+}
+
+vec3 drawScene(vec2 uv) {
+  vec3 col = vec3(1);
+  float circle = sdfCircle(uv, 0.1, vec2(0, 0));
+
+  col = mix(vec3(0, 0, 1), col, step(0., circle));
+
+  return col;
+}
+```
+[![circle](04/circle.png)](04/circle.glsl)
+Using the `mix` function with this approach lets us easily render multiple 2D shapes to the scene!
+```glsl
+float sdfSquare(vec2 uv, float size, vec2 offset) {
+  float x = uv.x - offset.x;
+  float y = uv.y - offset.y;
+
+  return max(abs(x), abs(y)) - size;
+}
+
+vec3 drawScene(vec2 uv) {
+  vec3 col = vec3(1);
+  float circle = sdfCircle(uv, 0.1, vec2(0, 0));
+  float square = sdfSquare(uv, 0.07, vec2(0.1, 0));
+  
+  col = mix(vec3(0, 0, 1), col, step(0., circle));
+  col = mix(vec3(1, 0, 0), col, step(0., square));
+  
+  return col;
+}
+```
+[![circle plus square](04/circle_plus_square.png)](04/circle_plus_square.glsl)
