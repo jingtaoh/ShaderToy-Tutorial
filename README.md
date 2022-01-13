@@ -128,3 +128,26 @@ vec3 drawScene(vec2 uv) {
 }
 ```
 [![circle plus square](04/circle_plus_square.png)](04/circle_plus_square.glsl)
+
+## 05 2D SDF Operations and More 2D Shapes
+
+### Combination 2D SDF Operations
+| Union | Intersection | Subtraction | XOR |
+| :---: | :---: | :---: | :---: |
+| `  res = min(d1, d2);` | `res = max(d1, d2);` | `res = max(-d1, d2);` | `res = max(min(d1, d2), -max(d1, d2));` |
+| [![union](05/union.png)](05/union.glsl) |[![intersection](05/intersection.png)](05/intersection.glsl) | [![subtraction](05/subtract_d1_from_d2.png)](05/subtraction.glsl)| [![xor](05/xor.png)](05/xor.glsl) |
+
+### Positional 2D SDF Operations
+| Symetric along X axis | Symetric along Y axis | Symetric along X and Y axis | 
+| :---: | :---: | :---: |
+| [![Symetric along X axis](05/symX.png)](05/symetry.glsl) | [![Symetric along Y axis](05/symY.png)](05/symetry.glsl) |[![Symetric along X and Y axis](05/symXY.png)](05/symetry.glsl)|
+
+### More 2D Shapes
+| Heart | Star | Box | Segment | 
+| :---: | :---: | :---: | :---: |
+|[![heart](05/heart.png)](05/heart.glsl) | [![star](05/star.png)](05/star.glsl) | [![box](05/box.png)](05/box.glsl) | [![box](05/segment.png)](05/segment.glsl) |
+
+[![bezier curve](05/bezier_curve.png)](05/bezier_curve.glsl)
+
+### Conclusion
+[![tennis ball](05/tennis_ball.png)](05/tennis_ball.glsl)
