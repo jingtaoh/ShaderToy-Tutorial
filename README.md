@@ -134,6 +134,7 @@ vec3 drawScene(vec2 uv) {
 ### Combination 2D SDF Operations
 | Union | Intersection | Subtraction | XOR |
 | :---: | :---: | :---: | :---: |
+| combine two shapes together. | take only the part where the two shapes intersect. | subtract d1 from d2. | take the parts of the two shapes that do not intersect with each other |
 | `  res = min(d1, d2);` | `res = max(d1, d2);` | `res = max(-d1, d2);` | `res = max(min(d1, d2), -max(d1, d2));` |
 | [![union](05/union.png)](05/union.glsl) |[![intersection](05/intersection.png)](05/intersection.glsl) | [![subtraction](05/subtract_d1_from_d2.png)](05/subtraction.glsl)| [![xor](05/xor.png)](05/xor.glsl) |
 
@@ -146,8 +147,85 @@ vec3 drawScene(vec2 uv) {
 | Heart | Star | Box | Segment | 
 | :---: | :---: | :---: | :---: |
 |[![heart](05/heart.png)](05/heart.glsl) | [![star](05/star.png)](05/star.glsl) | [![box](05/box.png)](05/box.glsl) | [![box](05/segment.png)](05/segment.glsl) |
+```glsl
+float sdHeart(vec2 uv, float size, vec2 offset) {
+  float x = uv.x - offset.x;
+  float y = uv.y - offset.y;
+  float group = dot(x, x) + dot(y, y) - size;
+  float d = group * dot(group, group) - dot(x, x) * dot(y, y) * y;
 
+  return d;
+}
+
+float sdStar5(in vec2 p, in float r, in float rf, vec2 offset) {
+  p -= offset; // This will subtract offset.x from p.x and subtract offset.y
+               // from p.y
+  const vec2 k1 = vec2(0.809016994375, -0.587785252292);
+  const vec2 k2 = vec2(-k1.x, k1.y);
+  p.x = abs(p.x);
+  p -= 2.0 * max(dot(k1, p), 0.0) * k1;
+  p -= 2.0 * max(dot(k2, p), 0.0) * k2;
+  p.x = abs(p.x);
+  p.y -= r;
+  vec2 ba = rf * vec2(-k1.y, k1.x) - vec2(0, 1);
+  float h = clamp(dot(p, ba) / dot(ba, ba), 0.0, r);
+  return length(p - ba * h) * sign(p.y * ba.x - p.x * ba.y);
+}
+
+float sdBox(in vec2 p, in vec2 b, vec2 offset) {
+  p -= offset;
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+float sdSegment(in vec2 p, in vec2 a, in vec2 b) {
+  vec2 pa = p - a, ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h);
+}
+```
+
+Quadratic Bézier curves accept three control points. In 2D, each control point will be a vec2 value with an x-component and y-component.
+```glsl
+float dot2(in vec2 v) { return dot(v, v); }
+
+float sdBezier(in vec2 pos, in vec2 A, in vec2 B, in vec2 C) {
+  vec2 a = B - A;
+  vec2 b = A - 2.0 * B + C;
+  vec2 c = a * 2.0;
+  vec2 d = A - pos;
+  float kk = 1.0 / dot(b, b);
+  float kx = kk * dot(a, b);
+  float ky = kk * (2.0 * dot(a, a) + dot(d, b)) / 3.0;
+  float kz = kk * dot(d, a);
+  float res = 0.0;
+  float p = ky - kx * kx;
+  float p3 = p * p * p;
+  float q = kx * (2.0 * kx * kx - 3.0 * ky) + kz;
+  float h = q * q + 4.0 * p3;
+  if (h >= 0.0) {
+    h = sqrt(h);
+    vec2 x = (vec2(h, -h) - q) / 2.0;
+    vec2 uv = sign(x) * pow(abs(x), vec2(1.0 / 3.0));
+    float t = clamp(uv.x + uv.y - kx, 0.0, 1.0);
+    res = dot2(d + (c + b * t) * t);
+  } else {
+    float z = sqrt(-p);
+    float v = acos(q / (p * z * 2.0)) / 3.0;
+    float m = cos(v);
+    float n = sin(v) * 1.732050808;
+    vec3 t = clamp(vec3(m + m, -n - m, n - m) * z - kx, 0.0, 1.0);
+    res = min(dot2(d + (c + b * t.x) * t.x), dot2(d + (c + b * t.y) * t.y));
+    // the third root cannot be the closest
+    // res = min(res,dot2(d+(c+b*t.z)*t.z));
+  }
+  return sqrt(res);
+}
+```
 [![bezier curve](05/bezier_curve.png)](05/bezier_curve.glsl)
 
+Many more shapes can be found in Inigo Quilez's [website](https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm).
+
 ### Conclusion
+We can use 2D operations together with Bézier curves to create interesting effects. We can subtract two Bézier curves from a circle to get some kind of tennis ball 🎾.
 [![tennis ball](05/tennis_ball.png)](05/tennis_ball.glsl)
