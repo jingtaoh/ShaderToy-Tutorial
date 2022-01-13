@@ -41,8 +41,7 @@ vec3 drawScene(vec2 uv) {
   float curve = sdBezier(uv, A, B, C);
 
   col = mix(vec3(1, 1, 1), col, step(0., curve - 0.01));
-
-  col = mix(vec3(0, 0.5, 1), col, step(0., curve - 0.01));
+  
   return col;
 }
 

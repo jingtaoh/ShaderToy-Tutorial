@@ -23,12 +23,16 @@ float opSymY(vec2 p, float r) {
   return sdCircle(p, r, vec2(0, 0.2));
 }
 
+float opSymXY(vec2 p, float r) {
+  p = abs(p);
+  return sdCircle(p, r, vec2(0.2));
+}
+
 vec3 drawScene(vec2 uv) {
   vec3 col = getBackgroundColor(uv);
 
   float res; // result
-  res = opSymX(uv, 0.1);
-  res = opSymY(uv, 0.1);
+  res = opSymXY(uv, 0.1);
 
   res = step(0., res);
   col = mix(vec3(0, 0.5, 1), col, res);
