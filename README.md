@@ -229,3 +229,43 @@ Many more shapes can be found in Inigo Quilez's [website](https://www.iquilezles
 ### Conclusion
 We can use 2D operations together with Bézier curves to create interesting effects. We can subtract two Bézier curves from a circle to get some kind of tennis ball 🎾.
 [![tennis ball](05/tennis_ball.png)](05/tennis_ball.glsl)
+
+## 06 3D Scenes with Ray Marching
+```glsl
+float sdSphere(vec3 p, float r)
+{
+  return length(p) - r; // p is the test point and r is the radius of the sphere
+}
+float rayMarch(vec3 ro, vec3 rd, float start, float end) {
+  float depth = start;
+  
+  for (int i = 0; i < 255; i++) {
+    vec3 p = ro + depth * rd;
+    float d = sdSphere(p, 1.);
+    depth += d;
+    if (d < 0.001 || depth > end) break;
+  }
+  
+  return depth;
+}
+```
+[![sphere](06/sphere.png)](06/sphere.glsl)
+
+Diffuse component takes the dot product between the ray direction of a light source and the direction of a surface normal.
+```glsl
+float dif = dot(normal, lightDirection); // dif = diffuse reflection
+```
+
+To compute the surface normal:
+```glsl
+vec3 calcNormal(vec3 p) {
+  vec2 e = vec2(1.0, -1.0) * 0.0005; // epsilon
+  float r = 1.; // radius of sphere
+  return normalize(
+    e.xyy * sdSphere(p + e.xyy, r) +
+    e.yyx * sdSphere(p + e.yyx, r) +
+    e.yxy * sdSphere(p + e.yxy, r) +
+    e.xxx * sdSphere(p + e.xxx, r));
+}
+```
+[![lighting](06/lighting.png)](06/lighting.glsl)
